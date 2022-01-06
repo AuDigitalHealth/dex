@@ -100,7 +100,7 @@ func (s *Server) discoveryHandler() (http.HandlerFunc, error) {
 		AuthMethods:       []string{"client_secret_basic", "client_secret_post"},
 		Claims: []string{
 			"iss", "sub", "aud", "iat", "exp", "email", "email_verified",
-			"locale", "name", "preferred_username", "at_hash",
+			"locale", "name", "preferred_username", "at_hash", "given_name", "family_name",
 		},
 	}
 
@@ -458,6 +458,8 @@ func (s *Server) finalizeLogin(identity connector.Identity, authReq storage.Auth
 	claims := storage.Claims{
 		UserID:            identity.UserID,
 		Username:          identity.Username,
+		GivenName:         identity.GivenName,
+		FamilyName:        identity.FamilyName,
 		PreferredUsername: identity.PreferredUsername,
 		Email:             identity.Email,
 		EmailVerified:     identity.EmailVerified,
@@ -479,8 +481,8 @@ func (s *Server) finalizeLogin(identity connector.Identity, authReq storage.Auth
 		email += " (unverified)"
 	}
 
-	s.logger.Infof("login successful: connector %q, username=%q, preferred_username=%q, email=%q, groups=%q",
-		authReq.ConnectorID, claims.Username, claims.PreferredUsername, email, claims.Groups)
+	s.logger.Infof("login successful: connector %q, username=%q, preferred_username=%q, email=%q, groups=%q, family_name=%q, given_name=%q",
+		authReq.ConnectorID, claims.Username, claims.PreferredUsername, email, claims.Groups, claims.FamilyName, claims.GivenName)
 
 	returnURL := path.Join(s.issuerURL.Path, "/approval") + "?req=" + authReq.ID
 	_, ok := conn.(connector.RefreshConnector)
@@ -1100,6 +1102,8 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
 	claims := storage.Claims{
 		UserID:            identity.UserID,
 		Username:          identity.Username,
+		FamilyName:        identity.FamilyName,
+		GivenName:         identity.GivenName,
 		PreferredUsername: identity.PreferredUsername,
 		Email:             identity.Email,
 		EmailVerified:     identity.EmailVerified,

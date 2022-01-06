@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"context"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
@@ -57,7 +58,8 @@ type NetworkDB struct {
 	Host     string
 	Port     uint16
 
-	ConnectionTimeout int // Seconds
+	ConnectionTimeout   int // Seconds
+	CreateDBIfNotExists bool // Create the DB uf it doesn't exist
 
 	// database/sql tunables, see
 	// https://golang.org/pkg/database/sql/#DB.SetConnMaxLifetime and below
@@ -268,6 +270,33 @@ func (s *MySQL) open(logger log.Logger) (*conn, error) {
 		cfg.Params[k] = v
 	}
 
+
+	if s.CreateDBIfNotExists {
+		logger.Info("Connect to mysql server")
+		dbc, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/", cfg.User, cfg.Passwd, cfg.Addr))
+		if err != nil {
+			return nil, err
+		}
+		defer dbc.Close()
+
+		logger.Info("Try to create db if it doesn't exist")
+		ctx, cancelfunc := context.WithTimeout(context.Background(), 5 * time.Second)
+		defer cancelfunc()
+			res, err := dbc.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS " + s.Database)
+		if err != nil {
+		fmt.Errorf("Error %v when creating DB\n", err)
+			return nil, err
+		}
+		no, err := res.RowsAffected()
+		if err != nil {
+			fmt.Errorf("Error %v when fetching rows", err)
+			return nil, err
+		}
+		fmt.Sprintf("Rows affected: %v", no)
+		dbc.Close()
+	}
+
+	logger.Info("Connect to mysql database")
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		return nil, err

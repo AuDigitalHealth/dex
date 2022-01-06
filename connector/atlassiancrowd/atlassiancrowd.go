@@ -54,10 +54,12 @@ type Config struct {
 }
 
 type crowdUser struct {
-	Key    string
-	Name   string
-	Active bool
-	Email  string
+	Key        string
+	Name       string
+	FirstName string `json:"first-name"`
+	LastName  string `json:"last-name"`
+	Active     bool
+	Email      string
 }
 
 type crowdGroups struct {
@@ -362,6 +364,8 @@ func (c *crowdConnector) groups(ctx context.Context, client *http.Client, userna
 func (c *crowdConnector) identityFromCrowdUser(user crowdUser) connector.Identity {
 	identity := connector.Identity{
 		Username:      user.Name,
+		FamilyName:    user.LastName,
+		GivenName:     user.FirstName,
 		UserID:        user.Key,
 		Email:         user.Email,
 		EmailVerified: true,

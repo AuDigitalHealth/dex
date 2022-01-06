@@ -249,6 +249,8 @@ func (s *Server) updateRefreshToken(token *internal.RefreshToken, refresh *stora
 		//
 		// UserID intentionally ignored for now.
 		old.Claims.Username = ident.Username
+		old.Claims.FamilyName = ident.FamilyName
+		old.Claims.GivenName = ident.GivenName
 		old.Claims.PreferredUsername = ident.PreferredUsername
 		old.Claims.Email = ident.Email
 		old.Claims.EmailVerified = ident.EmailVerified
@@ -305,6 +307,8 @@ func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request, clie
 	claims := storage.Claims{
 		UserID:            ident.UserID,
 		Username:          ident.Username,
+		GivenName:         ident.GivenName,
+		FamilyName:        ident.FamilyName,
 		PreferredUsername: ident.PreferredUsername,
 		Email:             ident.Email,
 		EmailVerified:     ident.EmailVerified,

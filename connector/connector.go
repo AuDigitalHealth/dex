@@ -25,6 +25,8 @@ type Scopes struct {
 type Identity struct {
 	UserID            string
 	Username          string
+	GivenName         string
+	FamilyName        string
 	PreferredUsername string
 	Email             string
 	EmailVerified     bool

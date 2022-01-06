@@ -170,6 +170,8 @@ type Client struct {
 type Claims struct {
 	UserID            string
 	Username          string
+	FamilyName        string
+	GivenName         string
 	PreferredUsername string
 	Email             string
 	EmailVerified     bool
